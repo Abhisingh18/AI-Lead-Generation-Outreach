@@ -35,3 +35,9 @@ ms-playwright/
 node_modules/
 .next/
 out/
+
+# SQLite WAL/SHM sidecar files
+*.db-shm
+*.db-wal
+*.sqlite3-shm
+*.sqlite3-wal
