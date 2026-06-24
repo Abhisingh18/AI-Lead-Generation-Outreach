@@ -1,0 +1,52 @@
+# Render Blueprint — deploys the FastAPI backend + a free PostgreSQL database.
+# In Render: New + -> Blueprint -> point to this repo. Then add the secret env vars.
+services:
+  - type: web
+    name: leadgen-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # DB auto-wired from the database below.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: leadgen-db
+          property: connectionString
+      # LLM
+      - key: LLM_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_MODEL
+        value: openai/gpt-oss-120b:free
+      - key: OPENROUTER_API_KEY
+        sync: false          # set in Render dashboard (secret)
+      # Email (Gmail)
+      - key: EMAIL_SENDER
+        value: abhisingh964800@gmail.com
+      - key: EMAIL_APP_PASSWORD
+        sync: false          # set in Render dashboard (secret)
+      - key: EMAIL_DRY_RUN
+        value: "false"
+      # Agency
+      - key: AGENCY_NAME
+        value: Pragyaan Labs
+      - key: AGENCY_WEBSITE
+        value: https://www.pragyaanlabs.space/
+      - key: AGENCY_SENDER_NAME
+        value: Abhishek Singh
+      - key: AGENCY_FOUNDER_NOTE
+        value: Founder, Pragyaan Labs (IIT Madras)
+      - key: AGENCY_CALENDAR_URL
+        value: https://calendar.app.google/VAw3ZG6C5FubkEwX9
+      # WhatsApp is NOT run on Render (no GUI) — keep dry-run on the server.
+      - key: WHATSAPP_DRY_RUN
+        value: "true"
+      - key: SCRAPER_HEADLESS
+        value: "true"
+      - key: APP_ENV
+        value: production
+
+databases:
+  - name: leadgen-db
+    plan: free

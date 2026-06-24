@@ -1,0 +1,23 @@
+# --- Web framework ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# --- Database ---
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10        # PostgreSQL driver (Render Postgres)
+
+# --- Scraping ---
+playwright==1.49.1
+beautifulsoup4==4.12.3
+lxml==5.3.0
+httpx==0.28.1
+
+# --- LLM ---
+openai==1.59.6                 # OpenAI-compatible client for OpenRouter / GLM
+
+# --- Utils ---
+python-dotenv==1.0.1
+tenacity==9.0.0
+loguru==0.7.3

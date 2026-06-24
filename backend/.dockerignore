@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+*.sqlite3
+*.db
+leadgen.db
+.wa_session/
+server.log
+logs/
+.pytest_cache/

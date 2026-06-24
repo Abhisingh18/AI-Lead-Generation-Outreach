@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f7fb;
+  --foreground: #1e293b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 100% -10%, #e0e7ff 0%, transparent 55%),
+    radial-gradient(1000px 500px at -10% 110%, #dcfce7 0%, transparent 50%),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.input {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #d6dbe6;
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.btn,
+.btn-primary,
+.btn-green {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.15s, opacity 0.15s;
+}
+.btn:active,
+.btn-primary:active,
+.btn-green:active {
+  transform: translateY(1px);
+}
+.btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+.btn:hover {
+  border-color: #94a3b8;
+}
+.btn-primary {
+  background: #4f46e5;
+  color: white;
+  box-shadow: 0 6px 16px -6px rgba(79, 70, 229, 0.6);
+}
+.btn-primary:hover {
+  background: #4338ca;
+}
+.btn-green {
+  background: #16a34a;
+  color: white;
+  box-shadow: 0 6px 16px -6px rgba(22, 163, 74, 0.6);
+}
+.btn-green:hover {
+  background: #15803d;
+}
+.btn:disabled,
+.btn-primary:disabled,
+.btn-green:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid #e6e9f0;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -16px rgba(16, 24, 40, 0.25);
+}
