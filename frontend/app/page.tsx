@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [progress, setProgress] = useState<ScrapeStatus | null>(null);
   const [sending, setSending] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [autoSend, setAutoSend] = useState(true);
   const [log, setLog] = useState<string[]>([]);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -48,6 +49,16 @@ export default function Dashboard() {
     const t = setInterval(refresh, 5000);
     return () => clearInterval(t);
   }, [refresh]);
+
+  // Auto-connect WhatsApp on load (QR appears by itself — no button tap needed).
+  const autoConnectedRef = useRef(false);
+  useEffect(() => {
+    if (autoSend && !autoConnectedRef.current) {
+      autoConnectedRef.current = true;
+      onConnect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSend]);
 
   const hasLeads = leads.length > 0;
   const hasMessages = leads.some((l) => l.message);
@@ -83,6 +94,12 @@ export default function Dashboard() {
                 ? "Scrape error: " + st.error
                 : `Done — ${st.done}/${st.total} leads analyzed.`
             );
+            // Auto-send: fire WhatsApp + Email without any button tap.
+            if (autoSend && st.phase !== "error") {
+              note("Auto-send: sending WhatsApp + emails…");
+              onSendAll(true);
+              onSendEmails(true);
+            }
           }
         } catch {
           /* ignore transient poll errors */
@@ -117,8 +134,8 @@ export default function Dashboard() {
     }
   }
 
-  async function onSendEmails() {
-    if (!confirm("Send emails to leads that have NO WhatsApp number?")) return;
+  async function onSendEmails(silent = false) {
+    if (!silent && !confirm("Send emails to leads that have NO WhatsApp number?")) return;
     setSendingEmail(true);
     note("Starting emails…");
     try {
@@ -153,8 +170,8 @@ export default function Dashboard() {
     }
   }
 
-  async function onSendAll() {
-    if (!confirm("Send WhatsApp messages to all listed leads?")) return;
+  async function onSendAll(silent = false) {
+    if (!silent && !confirm("Send WhatsApp messages to all listed leads?")) return;
     setSending(true);
     note("Starting send…");
     try {
@@ -191,7 +208,7 @@ export default function Dashboard() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-8">
-      <header className="mb-7">
+      <header className="mb-7 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-600 text-white text-xl font-bold shadow-lg shadow-indigo-600/30">
             ⚡
@@ -205,6 +222,17 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
+        <button
+          onClick={() => setAutoSend((v) => !v)}
+          className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold border transition ${
+            autoSend
+              ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/30"
+              : "bg-white text-slate-500 border-slate-300"
+          }`}
+          title="When ON: after scraping, WhatsApp + emails send automatically (no button tap)."
+        >
+          {autoSend ? "⚡ Full Auto: ON" : "Full Auto: OFF"}
+        </button>
       </header>
 
       <section className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
@@ -350,14 +378,14 @@ export default function Dashboard() {
             <button
               className="btn-green w-full mb-2"
               disabled={sending || waReadyCount === 0}
-              onClick={onSendAll}
+              onClick={() => onSendAll()}
             >
               {sending ? "Sending…" : `Send WhatsApp (${waReadyCount})`}
             </button>
             <button
               className="btn-primary w-full"
               disabled={sendingEmail || emailReadyCount === 0}
-              onClick={onSendEmails}
+              onClick={() => onSendEmails()}
             >
               {sendingEmail ? "Emailing…" : `Send Emails (${emailReadyCount})`}
             </button>

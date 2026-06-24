@@ -59,21 +59,45 @@ def _parse_rating_reviews(text: str) -> tuple[float | None, int | None]:
 
 
 async def _scroll_results(page: Page, target: int) -> None:
-    """Scroll the results feed until we have enough cards or hit the end."""
+    """Scroll the results feed until we have `target` cards or hit the end."""
     feed = page.locator('div[role="feed"]')
+    if not await feed.count():
+        return
+    cards_sel = 'div[role="feed"] a[href*="/maps/place/"]'
     last_count = 0
     stagnant = 0
-    while stagnant < 4:
-        cards = await page.locator('div[role="feed"] a[href*="/maps/place/"]').count()
+    # Generous cap so we can load large result sets (Maps loads ~20 at a time).
+    for _ in range(120):
+        cards = await page.locator(cards_sel).count()
         if cards >= target:
             break
-        await feed.evaluate("el => el.scrollBy(0, el.scrollHeight)")
-        await asyncio.sleep(random.uniform(1.2, 2.4))
+        # Stop if Google says we've hit the end of the list.
+        try:
+            if await page.get_by_text(
+                re.compile("reached the end of the list", re.I)
+            ).count():
+                break
+        except Exception:
+            pass
+
+        # Scroll the feed; also nudge the last card into view to trigger loading.
+        try:
+            await feed.evaluate("el => el.scrollBy(0, el.scrollHeight)")
+            if cards:
+                await page.locator(cards_sel).nth(cards - 1).scroll_into_view_if_needed(
+                    timeout=3000
+                )
+        except Exception:
+            pass
+        await asyncio.sleep(random.uniform(1.6, 2.8))
+
         if cards == last_count:
             stagnant += 1
         else:
             stagnant = 0
         last_count = cards
+        if stagnant >= 8:  # truly no new results after many tries
+            break
 
 
 async def _extract_detail(page: Page) -> ScrapedBusiness | None:
