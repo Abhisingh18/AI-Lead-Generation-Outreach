@@ -167,7 +167,17 @@ async def scrape_google_maps(
     logger.info("Scraping Google Maps: '{}' in '{}' (limit={})", category, city, limit)
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=settings.scraper_headless)
+        browser = await p.chromium.launch(
+            headless=settings.scraper_headless,
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage",   # avoid /dev/shm OOM on small containers
+                "--disable-gpu",
+                "--disable-extensions",
+                "--disable-background-networking",
+                "--js-flags=--max-old-space-size=256",
+            ],
+        )
         context = await browser.new_context(
             locale="en-US",
             user_agent=(

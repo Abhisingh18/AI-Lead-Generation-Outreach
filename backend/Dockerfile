@@ -22,6 +22,7 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-# Run under a virtual display so headed Chromium (WhatsApp Web) works.
-# Render provides $PORT.
-CMD ["sh", "-c", "xvfb-run -a --server-args='-screen 0 1280x1024x24 -ac' uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Scraping runs headless (no display needed). WhatsApp (which needs xvfb) is
+# disabled on the cloud due to the free-tier RAM limit — run it on your laptop.
+# To re-enable WhatsApp on a paid instance, wrap this with: xvfb-run -a ...
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
