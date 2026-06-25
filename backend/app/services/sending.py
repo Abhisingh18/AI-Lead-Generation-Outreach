@@ -164,6 +164,8 @@ def send_batch(
         return out
 
     # ---- Real send: one session ----
+    if not settings.whatsapp_enabled:
+        return [{"ok": False, "error": "WhatsApp is disabled on this server (run locally)"}]
     with WhatsAppWebSender() as wa:
         if not wa.ensure_logged_in(qr_wait_seconds=0):
             return [{"ok": False, "error": "not logged in (scan the QR via Connect first)"}]

@@ -38,7 +38,9 @@ services:
         value: Founder, Pragyaan Labs (IIT Madras)
       - key: AGENCY_CALENDAR_URL
         value: https://calendar.app.google/VAw3ZG6C5FubkEwX9
-      # WhatsApp is NOT run on Render (no GUI) — keep dry-run on the server.
+      # WhatsApp needs a real browser/screen — disabled on Render (run it locally).
+      - key: WHATSAPP_ENABLED
+        value: "false"
       - key: WHATSAPP_DRY_RUN
         value: "true"
       - key: SCRAPER_HEADLESS

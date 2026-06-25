@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     scraper_delay_max: float = 5.0
 
     # ---------- WhatsApp sender (Playwright + WhatsApp Web) ----------
+    # WhatsApp needs a real browser/screen — disable on headless cloud servers.
+    whatsapp_enabled: bool = True
     whatsapp_sender_number: str = ""          # your own WA number, e.g. 9648531091
     whatsapp_country_code: str = "91"          # default India
     whatsapp_session_dir: str = ".wa_session"  # persistent browser profile (QR once)

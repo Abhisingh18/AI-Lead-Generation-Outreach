@@ -41,6 +41,15 @@ class _LoginManager:
         }
 
     def start(self) -> dict:
+        from app.config import settings
+
+        if not settings.whatsapp_enabled:
+            self.status = "disabled"
+            self.error = (
+                "WhatsApp needs a real browser/screen, so it's disabled on the cloud "
+                "server. Use Email here, or run the backend on your laptop for WhatsApp."
+            )
+            return self.snapshot()
         with self._lock:
             if self._thread and self._thread.is_alive():
                 return self.snapshot()

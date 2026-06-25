@@ -112,16 +112,20 @@ export default function Dashboard() {
   }
 
   async function onConnect() {
-    note("Opening WhatsApp session… scan the QR with your phone.");
     try {
       const s = await api.waConnect();
       setWa(s);
+      if (s.status === "disabled") {
+        note("WhatsApp disabled on this server — email works here.");
+        return; // don't poll; cloud server can't run WhatsApp
+      }
+      note("Opening WhatsApp session… scan the QR with your phone.");
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(async () => {
         try {
           const st = await api.waStatus();
           setWa(st);
-          if (st.logged_in || st.status === "error") {
+          if (st.logged_in || st.status === "error" || st.status === "disabled") {
             if (pollRef.current) clearInterval(pollRef.current);
             note(st.logged_in ? "WhatsApp connected ✓" : "QR error: " + st.error);
           }
@@ -322,7 +326,15 @@ export default function Dashboard() {
           </Card>
 
           <Card title="3 · Connect WhatsApp">
-            {connected ? (
+            {wa?.status === "disabled" ? (
+              <div className="text-sm">
+                <div className="text-amber-600 font-medium">WhatsApp not available here</div>
+                <p className="text-xs text-slate-500 mt-1">
+                  This cloud server has no screen, so WhatsApp can&apos;t run. Email works
+                  here. To send WhatsApp, run the backend on your laptop.
+                </p>
+              </div>
+            ) : connected ? (
               <div className="flex items-center gap-2 text-emerald-600 text-sm font-semibold">
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-emerald-100">
                   ✓
