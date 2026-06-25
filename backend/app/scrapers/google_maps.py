@@ -176,7 +176,21 @@ async def scrape_google_maps(
             ),
         )
         page = await context.new_page()
-        await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+        # Retry the initial navigation — datacenter IPs sometimes get transient
+        # socket/network errors (ERR_SOCKET_NOT_CONNECTED) from Google.
+        last_err: Exception | None = None
+        for attempt in range(4):
+            try:
+                await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+                last_err = None
+                break
+            except Exception as exc:
+                last_err = exc
+                logger.warning("Maps goto attempt {} failed: {}", attempt + 1, str(exc)[:80])
+                await asyncio.sleep(3 + attempt * 2)
+        if last_err:
+            await browser.close()
+            raise last_err
         await _human_delay()
 
         # Consent screen handling (best effort)
