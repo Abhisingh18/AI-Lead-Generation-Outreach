@@ -27,11 +27,8 @@ services:
         sync: false          # set in Render dashboard (secret)
       - key: EMAIL_DRY_RUN
         value: "false"
-      # Render blocks SMTP, so use Brevo's HTTP API for email on the cloud.
       - key: EMAIL_PROVIDER
-        value: "brevo"
-      - key: BREVO_API_KEY
-        sync: false          # set in Render dashboard (Brevo -> SMTP & API -> API Keys)
+        value: "gmail"
       # Agency
       - key: AGENCY_NAME
         value: Pragyaan Labs
