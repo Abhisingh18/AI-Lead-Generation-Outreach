@@ -38,11 +38,11 @@ services:
         value: Founder, Pragyaan Labs (IIT Madras)
       - key: AGENCY_CALENDAR_URL
         value: https://calendar.app.google/VAw3ZG6C5FubkEwX9
-      # WhatsApp needs a real browser/screen — disabled on Render (run it locally).
+      # WhatsApp runs under a virtual display (xvfb) provided by the Docker image.
       - key: WHATSAPP_ENABLED
-        value: "false"
-      - key: WHATSAPP_DRY_RUN
         value: "true"
+      - key: WHATSAPP_DRY_RUN
+        value: "false"
       - key: SCRAPER_HEADLESS
         value: "true"
       - key: APP_ENV
