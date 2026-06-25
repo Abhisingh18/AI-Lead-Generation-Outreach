@@ -72,12 +72,20 @@ class Settings(BaseSettings):
     email_dry_run: bool = True      # True = don't actually send (safe default)
     email_daily_limit: int = 50
 
-    # Brevo (Sendinblue) failover — used automatically when Gmail hits its quota.
+    # Email provider: "gmail" (SMTP, works locally) or "brevo" (HTTP API, works on
+    # clouds that block SMTP like Render). Set EMAIL_PROVIDER=brevo on Render.
+    email_provider: str = "gmail"
+
+    # Brevo HTTP API (port 443 — not blocked by clouds). Get the key from
+    # Brevo -> SMTP & API -> API Keys. Verify your sender email in Brevo first.
+    brevo_api_key: str = ""
+
+    # Brevo SMTP (legacy failover; SMTP is blocked on some clouds).
     brevo_smtp_host: str = "smtp-relay.brevo.com"
-    brevo_smtp_port: int = 587      # STARTTLS
-    brevo_login: str = ""           # Brevo SMTP login (from Brevo dashboard)
-    brevo_smtp_key: str = ""        # Brevo SMTP key / master password
-    email_failover: bool = True     # try Brevo if Gmail fails with a quota/limit error
+    brevo_smtp_port: int = 587
+    brevo_login: str = ""
+    brevo_smtp_key: str = ""
+    email_failover: bool = True     # try Brevo if Gmail fails
 
     # ---------- App ----------
     app_env: str = "development"

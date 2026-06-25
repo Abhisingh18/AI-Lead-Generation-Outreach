@@ -130,14 +130,52 @@ def _is_limit_error(err: str) -> bool:
     return any(h in e for h in _LIMIT_HINTS)
 
 
+def _send_brevo_api(to_addr: str, subject: str, body: str) -> EmailResult:
+    """Send via Brevo's HTTP API (port 443) — works on clouds that block SMTP."""
+    import httpx
+
+    try:
+        resp = httpx.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={
+                "api-key": settings.brevo_api_key,
+                "content-type": "application/json",
+                "accept": "application/json",
+            },
+            json={
+                "sender": {
+                    "name": settings.agency_sender_name or settings.agency_name,
+                    "email": settings.email_sender,
+                },
+                "to": [{"email": to_addr}],
+                "subject": subject,
+                "textContent": body,
+            },
+            timeout=30,
+        )
+        if resp.status_code in (200, 201):
+            logger.info("Emailed {} via Brevo API", to_addr)
+            return EmailResult(to=to_addr, ok=True, provider="brevo-api")
+        return EmailResult(
+            to=to_addr, ok=False, provider="brevo-api",
+            error=f"{resp.status_code}: {resp.text[:160]}",
+        )
+    except Exception as exc:
+        return EmailResult(to=to_addr, ok=False, provider="brevo-api", error=str(exc))
+
+
 def send_email(to_addr: str, subject: str, body: str) -> EmailResult:
-    """Send an email: Gmail first, Brevo on quota/limit failure."""
+    """Send an email via the configured provider (Gmail SMTP or Brevo HTTP API)."""
     if not to_addr or "@" not in to_addr:
         return EmailResult(to=to_addr, ok=False, error="invalid email")
 
     if settings.email_dry_run:
         logger.info("[EMAIL DRY-RUN] would email {} | subj: {}", to_addr, subject[:50])
         return EmailResult(to=to_addr, ok=True, dry_run=True, provider="dry-run")
+
+    # Brevo HTTP API (preferred on clouds that block SMTP).
+    if settings.email_provider == "brevo" and settings.brevo_api_key:
+        return _send_brevo_api(to_addr, subject, body)
 
     from_addr = settings.email_sender
     msg = _build(from_addr, to_addr, subject, body)
@@ -159,7 +197,13 @@ def send_email(to_addr: str, subject: str, body: str) -> EmailResult:
             gmail_err = str(exc)
             logger.warning("Gmail send to {} failed: {}", to_addr, gmail_err[:120])
 
-    # 2) Failover to Brevo on a limit error (or if Gmail isn't configured).
+    # 1b) Brevo HTTP API failover (works even when SMTP is blocked, e.g. Render).
+    if settings.brevo_api_key:
+        res = _send_brevo_api(to_addr, subject, body)
+        if res.ok:
+            return res
+
+    # 2) Failover to Brevo SMTP on a limit error (or if Gmail isn't configured).
     should_failover = brevo_ready and settings.email_failover and (
         not gmail_ready or (gmail_err and _is_limit_error(gmail_err))
     )
