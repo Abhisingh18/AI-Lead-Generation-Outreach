@@ -1,6 +1,9 @@
 // Thin client for the FastAPI backend.
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+// Uses NEXT_PUBLIC_API_BASE if set, else the deployed Render backend.
+// Local dev overrides this via frontend/.env.local (http://localhost:8000).
+const BASE =
+  process.env.NEXT_PUBLIC_API_BASE || "https://leadgen-backend-l31l.onrender.com";
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
