@@ -244,6 +244,20 @@ def send_emails_status():
     return email_job.snapshot()
 
 
+@router.post("/email/test")
+def email_test(to: str = Query(..., description="recipient email")):
+    """Send a test email to verify the email provider works (e.g. from the cloud)."""
+    from app.senders.email_sender import send_email
+
+    r = send_email(
+        to,
+        "Pragyaan Labs — email test ✅",
+        "This is a test email from your AI Lead Gen backend. "
+        "If you received it, email sending works!",
+    )
+    return {"ok": r.ok, "provider": r.provider, "error": r.error}
+
+
 # ----------------------------- Dashboard -----------------------------
 
 
