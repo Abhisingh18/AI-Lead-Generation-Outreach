@@ -1,5 +1,6 @@
-# Render Blueprint — deploys the FastAPI backend + a free PostgreSQL database.
-# In Render: New + -> Blueprint -> point to this repo. Then add the secret env vars.
+# Render Blueprint — deploys the FastAPI backend.
+# Uses an EXISTING PostgreSQL DATABASE_URL (paste it during sync) because Render's
+# free plan allows only one free database per account.
 services:
   - type: web
     name: leadgen-backend
@@ -9,11 +10,9 @@ services:
     plan: free
     healthCheckPath: /health
     envVars:
-      # DB auto-wired from the database below.
+      # Paste your existing Render Postgres "Internal Database URL" during sync.
       - key: DATABASE_URL
-        fromDatabase:
-          name: leadgen-db
-          property: connectionString
+        sync: false
       # LLM
       - key: LLM_PROVIDER
         value: openrouter
@@ -46,7 +45,3 @@ services:
         value: "true"
       - key: APP_ENV
         value: production
-
-databases:
-  - name: leadgen-db
-    plan: free
