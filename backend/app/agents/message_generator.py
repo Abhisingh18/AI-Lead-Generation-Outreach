@@ -19,7 +19,11 @@ from app.models import Business
 def generate_message(business: Business, audit: AuditResult) -> str:
     """Produce a short, personalized WhatsApp outreach message."""
     problems = ", ".join(audit.problems) or "limited online presence"
-    services = ", ".join(audit.recommended_services) or "website & automation services"
+    opportunities = (
+        ", ".join(audit.opportunities or audit.recommended_services)
+        or "website & automation"
+    )
+    growth = ", ".join(audit.growth_ideas) or "more leads and less manual work"
 
     user = MESSAGE_USER_TEMPLATE.format(
         name=business.name,
@@ -27,7 +31,8 @@ def generate_message(business: Business, audit: AuditResult) -> str:
         city=business.city or "your city",
         country=business.country or "",
         problems=problems,
-        services=services,
+        opportunities=opportunities,
+        growth_ideas=growth,
         agency_services=settings.agency_services,
         sender_name=settings.agency_sender_name or "the team",
         founder_note=settings.agency_founder_note or "",
@@ -64,14 +69,19 @@ def _ensure_calendar(msg: str) -> str:
 def generate_email(business: Business, audit: AuditResult) -> tuple[str, str]:
     """Produce (subject, body) for a cold outreach email."""
     problems = ", ".join(audit.problems) or "limited online presence"
-    services = ", ".join(audit.recommended_services) or "website & automation services"
+    opportunities = (
+        ", ".join(audit.opportunities or audit.recommended_services)
+        or "website & automation"
+    )
+    growth = ", ".join(audit.growth_ideas) or "more leads and less manual work"
     user = EMAIL_USER_TEMPLATE.format(
         name=business.name,
         category=business.category or "business",
         city=business.city or "your city",
         country=business.country or "",
         problems=problems,
-        services=services,
+        opportunities=opportunities,
+        growth_ideas=growth,
         sender_name=settings.agency_sender_name or "the team",
         founder_note=settings.agency_founder_note or "",
         agency_name=settings.agency_name,

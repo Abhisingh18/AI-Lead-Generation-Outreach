@@ -17,6 +17,7 @@ class AuditResult:
     ai_opportunity_score: int | None = None
     problems: list[str] = field(default_factory=list)
     opportunities: list[str] = field(default_factory=list)
+    growth_ideas: list[str] = field(default_factory=list)
     recommended_services: list[str] = field(default_factory=list)
     audit_summary: str = ""
 
@@ -59,6 +60,7 @@ def run_audit(business: Business, signals: WebsiteSignals) -> AuditResult:
         ai_opportunity_score=_as_int(data.get("ai_opportunity_score")),
         problems=_as_list(data.get("problems")),
         opportunities=_as_list(data.get("opportunities")),
+        growth_ideas=_as_list(data.get("growth_ideas")),
         recommended_services=_as_list(data.get("recommended_services")),
         audit_summary=str(data.get("audit_summary", "")).strip(),
     )
