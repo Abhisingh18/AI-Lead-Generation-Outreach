@@ -43,6 +43,9 @@ services:
         value: "true"
       - key: WHATSAPP_DRY_RUN
         value: "false"
+      # Used for the "link with phone number" code (lets you connect on one phone).
+      - key: WHATSAPP_SENDER_NUMBER
+        value: "9648531091"
       - key: SCRAPER_HEADLESS
         value: "true"
       - key: APP_ENV

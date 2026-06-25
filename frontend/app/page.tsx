@@ -211,8 +211,8 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-8">
-      <header className="mb-7 flex items-start justify-between gap-3">
+    <main className="mx-auto w-full max-w-6xl px-4 sm:px-5 py-6 sm:py-8">
+      <header className="mb-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-600 text-white text-xl font-bold shadow-lg shadow-indigo-600/30">
             ⚡
@@ -340,6 +340,19 @@ export default function Dashboard() {
                   ✓
                 </span>
                 Connected
+              </div>
+            ) : wa?.link_code ? (
+              <div className="text-center">
+                <p className="text-xs text-slate-500 mb-2">
+                  On your phone: WhatsApp → <b>Linked Devices</b> → <b>Link a Device</b> →
+                  <b> Link with phone number instead</b> → type this code:
+                </p>
+                <div className="text-2xl font-bold tracking-[0.3em] text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg py-3">
+                  {wa.link_code}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-2">
+                  Works on the same phone — no QR scanning needed.
+                </p>
               </div>
             ) : wa?.qr ? (
               <div className="text-center">

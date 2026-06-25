@@ -52,6 +52,7 @@ export type WaStatus = {
   status: string;
   logged_in: boolean;
   qr: string | null;
+  link_code: string | null;
   error: string | null;
 };
 
