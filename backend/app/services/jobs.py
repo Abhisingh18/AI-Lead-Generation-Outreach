@@ -15,6 +15,7 @@ import threading
 from loguru import logger
 
 from app.database import SessionLocal
+from app.models import Business
 from app.scrapers.google_maps import ScrapedBusiness
 from app.services.pipeline import process_business, upsert_business
 
@@ -84,10 +85,28 @@ class ScrapeJob:
                 city, category, max_results, country=country, dial_code=dial_code
             )
             self.total = len(scraped)
-            self.phase = "processing"
+
+            # Phase 1: save ALL leads quickly so they appear in the dashboard at once.
+            biz_ids: list[int] = []
             for sb in scraped:
-                await asyncio.to_thread(self._handle_one, sb, run_pipeline)
-                self.done += 1
+                bid = await asyncio.to_thread(self._save, sb)
+                if bid:
+                    biz_ids.append(bid)
+
+            # Phase 2: run the AI pipeline with limited concurrency (much faster).
+            if run_pipeline and biz_ids:
+                self.phase = "processing"
+                sem = asyncio.Semaphore(4)  # 4 leads audited/written at a time
+
+                async def _proc(bid: int) -> None:
+                    async with sem:
+                        await asyncio.to_thread(self._process_one, bid)
+                        self.done += 1
+
+                await asyncio.gather(*(_proc(b) for b in biz_ids))
+            else:
+                self.done = len(biz_ids)
+
             self.phase = "done"
             logger.info("Scrape job done: {}/{} for '{}' in {}", self.done, self.total, category, city)
         except Exception as exc:
@@ -98,19 +117,33 @@ class ScrapeJob:
             self.running = False
 
     @staticmethod
-    def _handle_one(sb: ScrapedBusiness, run_pipeline: bool) -> None:
-        """Persist + (optionally) run the AI pipeline for one business, own session."""
+    def _save(sb: ScrapedBusiness) -> int | None:
+        """Quickly persist a scraped business (no LLM). Returns its id."""
         db = SessionLocal()
         try:
             biz = upsert_business(db, sb)
             if biz is None:  # already contacted — skip
-                return
+                return None
             db.commit()
-            if run_pipeline:
+            return biz.id
+        except Exception:
+            db.rollback()
+            logger.exception("Failed saving '{}'", getattr(sb, "name", "?"))
+            return None
+        finally:
+            db.close()
+
+    @staticmethod
+    def _process_one(business_id: int) -> None:
+        """Run the AI pipeline (audit + message) for one saved business."""
+        db = SessionLocal()
+        try:
+            biz = db.get(Business, business_id)
+            if biz:
                 process_business(db, biz)
         except Exception:
             db.rollback()
-            logger.exception("Failed handling business '{}'", getattr(sb, "name", "?"))
+            logger.exception("Failed processing business id {}", business_id)
         finally:
             db.close()
 

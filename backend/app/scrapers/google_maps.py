@@ -231,7 +231,8 @@ async def scrape_google_maps(
             seen.add(href)
             try:
                 await page.goto(href, wait_until="domcontentloaded", timeout=45000)
-                await _human_delay()
+                # Short pause — just enough for the detail panel to render.
+                await asyncio.sleep(random.uniform(0.6, 1.3))
                 biz = await _extract_detail(page)
                 if biz and biz.name:
                     biz.category = category
